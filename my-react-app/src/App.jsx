@@ -44,7 +44,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">📘 Posts CRUD</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">CRUD</h1>
 
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md max-w-xl mx-auto mb-8">
         <input
