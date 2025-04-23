@@ -33,15 +33,15 @@ function App() {
 
   useEffect(() => {
     if (postErrors.length > 0) {
-      setIsFading(false); // reset fade
+      setIsFading(false);    
 
       const fadeTimer = setTimeout(() => {
-        setIsFading(true); // trigger fade out
-      }, 3000); // start fading at 3s
+        setIsFading(true); 
+      }, 1000); 
 
       const clearTimer = setTimeout(() => {
         setPostErrors([]);
-      }, 4000); // remove completely at 4s
+      }, 2000); 
 
       return () => {
         clearTimeout(fadeTimer);
