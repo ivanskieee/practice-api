@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+const getInitialTheme = () => {
+  if (localStorage.getItem("theme")) {
+    return localStorage.getItem("theme") === "dark";
+  }
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+};
+
 const API_URL = "http://localhost:3000/api/posts";
 
 function App() {
@@ -10,39 +17,32 @@ function App() {
   const [editingPost, setEditingPost] = useState(null);
 
   const [postErrors, setPostErrors] = useState([]);
-  const [commentErrors, setCommentErrors] = useState({}); // key: postId
-
-  const [newComment, setNewComment] = useState("");
-  const [editingComment, setEditingComment] = useState(null);
+  const [commentErrors, setCommentErrors] = useState({});
+  const [newComments, setNewComments] = useState({});
+  const [editingComments, setEditingComments] = useState({});
   const [commentsByPostId, setCommentsByPostId] = useState({});
   const [isFading, setIsFading] = useState(false);
+
+  const [darkMode, setDarkMode] = useState(getInitialTheme);
 
   const fetchPosts = async () => {
     const res = await axios.get(API_URL);
     setPosts(res.data);
-
     for (const post of res.data) {
       const commentRes = await axios.get(`${API_URL}/${post.id}/comments`);
       setCommentsByPostId((prev) => ({ ...prev, [post.id]: commentRes.data }));
     }
   };
-  
+
   useEffect(() => {
-    fetchPosts()
-  }, [])
+    fetchPosts();
+  }, []);
 
   useEffect(() => {
     if (postErrors.length > 0) {
-      setIsFading(false);    
-
-      const fadeTimer = setTimeout(() => {
-        setIsFading(true); 
-      }, 1000); 
-
-      const clearTimer = setTimeout(() => {
-        setPostErrors([]);
-      }, 2000); 
-
+      setIsFading(false);
+      const fadeTimer = setTimeout(() => setIsFading(true), 1000);
+      const clearTimer = setTimeout(() => setPostErrors([]), 2000);
       return () => {
         clearTimeout(fadeTimer);
         clearTimeout(clearTimer);
@@ -50,10 +50,19 @@ function App() {
     }
   }, [postErrors]);
 
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [darkMode]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setPostErrors([]);
-
     try {
       if (editingPost) {
         await axios.put(`${API_URL}/${editingPost.id}`, {
@@ -67,11 +76,11 @@ function App() {
       setBody("");
       fetchPosts();
     } catch (err) {
-      if (err.response?.data?.errors) {
-        setPostErrors(err.response.data.errors);
-      } else {
-        setPostErrors(["body is too short (minimum is 10 characters)"]);
-      }
+      setPostErrors(
+        err.response?.data?.errors || [
+          "body is too short (minimum is 10 characters)",
+        ]
+      );
     }
   };
 
@@ -88,68 +97,72 @@ function App() {
 
   const handleCommentSubmit = async (e, postId) => {
     e.preventDefault();
+    const commentBody = newComments[postId] || "";
     setCommentErrors((prev) => ({ ...prev, [postId]: [] }));
 
     try {
-      if (editingComment) {
-        await axios.put(`${API_URL}/${postId}/comments/${editingComment.id}`, {
-          comment: { body: newComment },
-        });
-        setEditingComment(null);
+      if (editingComments[postId]) {
+        await axios.put(
+          `${API_URL}/${postId}/comments/${editingComments[postId].id}`,
+          {
+            comment: { body: commentBody },
+          }
+        );
+        setEditingComments((prev) => ({ ...prev, [postId]: null }));
       } else {
         await axios.post(`${API_URL}/${postId}/comments`, {
-          comment: { body: newComment },
+          comment: { body: commentBody },
         });
       }
-      setNewComment("");
+      setNewComments((prev) => ({ ...prev, [postId]: "" }));
       fetchPosts();
     } catch (err) {
-      if (err.response?.data?.errors) {
-        setCommentErrors((prev) => ({
-          ...prev,
-          [postId]: err.response.data.errors,
-        }));
-      } else {
-        setCommentErrors((prev) => ({
-          ...prev,
-          [postId]: ["Something went wrong"],
-        }));
-      }
+      setCommentErrors((prev) => ({
+        ...prev,
+        [postId]: err.response?.data?.errors || ["Something went wrong"],
+      }));
     }
   };
 
-  const handleEditComment = (comment) => {
-    setNewComment(comment.body);
-    setEditingComment(comment);
+  const handleEditComment = (postId, comment) => {
+    setNewComments((prev) => ({ ...prev, [postId]: comment.body }));
+    setEditingComments((prev) => ({ ...prev, [postId]: comment }));
   };
 
   const handleDeleteComment = async (postId, commentId) => {
     await axios.delete(`${API_URL}/${postId}/comments/${commentId}`);
+    setEditingComments((prev) => ({ ...prev, [postId]: null }));
+    setNewComments((prev) => ({ ...prev, [postId]: "" }));
     fetchPosts();
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        CRUD with Comments
-      </h1>
-
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-8">
+      <div className="flex justify-between items-center mb-6 max-w-xl mx-auto">
+        <h1 className="text-3xl font-bold">CRUD with Comments</h1>
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          className="bg-gray-300 dark:bg-gray-700 text-sm px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors duration-300"
+        >
+          {darkMode ? "Light Mode" : "Dark Mode"}
+        </button>
+      </div>
       {/* Post Form */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded shadow-md max-w-xl mx-auto mb-8"
+        className="bg-white dark:bg-gray-800 p-6 rounded shadow-md max-w-xl mx-auto mb-8"
       >
         <input
           type="text"
           placeholder="Title"
-          className="w-full p-2 mb-4 border rounded"
+          className="w-full p-2 mb-4 border rounded dark:bg-gray-700 dark:border-gray-600"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
         />
         <textarea
           placeholder="Body"
-          className="w-full p-2 mb-4 border rounded"
+          className="w-full p-2 mb-4 border rounded dark:bg-gray-700 dark:border-gray-600"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           required
@@ -175,25 +188,28 @@ function App() {
         </button>
       </form>
 
-      {/* Post List with Comments */}
+      {/* Posts and Comments */}
       <div className="max-w-xl mx-auto space-y-4">
         {posts.map((post) => (
-          <div key={post.id} className="bg-white p-4 rounded shadow-sm">
+          <div
+            key={post.id}
+            className="bg-white dark:bg-gray-800 p-4 rounded shadow-sm"
+          >
             <div className="flex justify-between items-start">
               <div>
                 <h2 className="text-xl font-semibold">{post.title}</h2>
-                <p className="text-gray-700">{post.body}</p>
+                <p>{post.body}</p>
               </div>
               <div className="space-x-2">
                 <button
                   onClick={() => handleEdit(post)}
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(post.id)}
-                  className="text-sm text-red-600 hover:underline"
+                  className="text-sm text-red-600 dark:text-red-400 hover:underline"
                 >
                   Delete
                 </button>
@@ -201,17 +217,17 @@ function App() {
             </div>
 
             {/* Comments Section */}
-            <div className="mt-4 pl-4 border-l">
+            <div className="mt-4 pl-4 border-l border-gray-300 dark:border-gray-600">
               <h3 className="text-md font-bold mb-2">Comments</h3>
               {commentsByPostId[post.id]?.map((comment) => (
                 <div
                   key={comment.id}
                   className="mb-2 flex justify-between items-start"
                 >
-                  <p className="text-sm text-gray-800">{comment.body}</p>
+                  <p className="text-sm">{comment.body}</p>
                   <div className="space-x-1 text-sm">
                     <button
-                      onClick={() => handleEditComment(comment)}
+                      onClick={() => handleEditComment(post.id, comment)}
                       className="text-blue-500"
                     >
                       Edit
@@ -234,9 +250,14 @@ function App() {
                 <input
                   type="text"
                   placeholder="Write a comment..."
-                  className="w-full p-2 border rounded text-sm"
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
+                  className="w-full p-2 border rounded text-sm dark:bg-gray-700 dark:border-gray-600"
+                  value={newComments[post.id] || ""}
+                  onChange={(e) =>
+                    setNewComments((prev) => ({
+                      ...prev,
+                      [post.id]: e.target.value,
+                    }))
+                  }
                   required
                 />
                 {commentErrors[post.id]?.length > 0 && (
@@ -252,7 +273,7 @@ function App() {
                   type="submit"
                   className="mt-1 bg-blue-500 text-white text-sm py-1 px-2 rounded hover:bg-blue-600"
                 >
-                  {editingComment ? "Update Comment" : "Add Comment"}
+                  {editingComments[post.id] ? "Update Comment" : "Add Comment"}
                 </button>
               </form>
             </div>
