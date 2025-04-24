@@ -1,10 +1,12 @@
 class Api::CommentsController < ApplicationController
   before_action :set_post
   before_action :set_comment, only: [:update, :destroy]
+  before_action :set_post, except: [:index]
 
   def index
-    render json: @post.comments
-  end
+    comments = Comment.all.includes(:post)
+    render json: comments.as_json(include: :post)
+  end  
 
   def create
     comment = @post.comments.build(comment_params)
