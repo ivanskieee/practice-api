@@ -195,7 +195,6 @@ function Dashboard({ darkMode, setDarkMode }) {
                 </button>
               </div>
             </div>
-
             {/* Comments */}
             <div className="mt-4 pl-4 border-l border-gray-300 dark:border-gray-600">
               <h3 className="text-md font-bold mb-2">Comments</h3>
