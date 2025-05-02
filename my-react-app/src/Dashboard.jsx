@@ -135,18 +135,19 @@ function Dashboard({ darkMode, setDarkMode }) {
         <input
           type="text"
           placeholder="Title"
-          className="w-full p-2 mb-4 border rounded dark:bg-gray-700 dark:border-gray-600"
+          className="w-full p-2 mb-4 border rounded bg-white dark:bg-gray-700 dark:border-gray-600"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
         />
         <textarea
           placeholder="Body"
-          className="w-full p-2 mb-4 border rounded dark:bg-gray-700 dark:border-gray-600"
+          className="w-full p-2 mb-4 border rounded bg-white dark:bg-gray-700 dark:border-gray-600"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           required
         />
+
         {postErrors.length > 0 && (
           <div
             className={`mb-4 text-sm text-red-600 transition-opacity duration-1000 ${
@@ -228,7 +229,7 @@ function Dashboard({ darkMode, setDarkMode }) {
                 <input
                   type="text"
                   placeholder="Write a comment..."
-                  className="w-full p-2 border rounded text-sm dark:bg-gray-700 dark:border-gray-600"
+                  className="w-full p-2 border rounded text-sm bg-white dark:bg-gray-700 dark:border-gray-600"
                   value={newComments[post.id] || ""}
                   onChange={(e) =>
                     setNewComments((prev) => ({
