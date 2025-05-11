@@ -14,7 +14,6 @@ function Dashboard() {
   const [categories, setCategories] = useState([]);
   const [editingPost, setEditingPost] = useState(null);
 
-  // New state for sidebar
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState("posts");
 
