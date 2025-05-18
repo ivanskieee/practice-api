@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useTheme } from "./ThemeContext";
 
+
 const API_URL = "http://localhost:3000/api/posts";
 const CATEGORIES_URL = "http://localhost:3000/api/categories";
 
