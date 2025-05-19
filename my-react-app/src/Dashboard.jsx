@@ -1,135 +1,11 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useTheme } from "./ThemeContext";
-
-
-const API_URL = "http://localhost:3000/api/posts";
-const CATEGORIES_URL = "http://localhost:3000/api/categories";
+import CrudWithComments from "./CrudWithComments";
 
 function Dashboard() {
   const { darkMode, toggleDarkMode } = useTheme();
-  const [posts, setPosts] = useState([]);
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [categories, setCategories] = useState([]);
-  const [editingPost, setEditingPost] = useState(null);
-
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [activeSection, setActiveSection] = useState("posts");
-
-  const [postErrors, setPostErrors] = useState([]);
-  const [commentErrors, setCommentErrors] = useState({});
-  const [newComments, setNewComments] = useState({});
-  const [editingComments, setEditingComments] = useState({});
-  const [commentsByPostId, setCommentsByPostId] = useState({});
-  const [isFading, setIsFading] = useState(false);
-
-  const fetchPosts = async () => {
-    const res = await axios.get(API_URL);
-    setPosts(res.data);
-    for (const post of res.data) {
-      const commentRes = await axios.get(`${API_URL}/${post.id}/comments`);
-      setCommentsByPostId((prev) => ({ ...prev, [post.id]: commentRes.data }));
-    }
-  };
-
-  const fetchCategories = async () => {
-    const res = await axios.get(CATEGORIES_URL);
-    setCategories(res.data);
-  };
-
-  useEffect(() => {
-    fetchPosts();
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    if (postErrors.length > 0) {
-      setIsFading(false);
-      const fadeTimer = setTimeout(() => setIsFading(true), 1000);
-      const clearTimer = setTimeout(() => setPostErrors([]), 2000);
-      return () => {
-        clearTimeout(fadeTimer);
-        clearTimeout(clearTimer);
-      };
-    }
-  }, [postErrors]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setPostErrors([]);
-    try {
-      const postPayload = {
-        title,
-        body,
-        category_id: categoryId,
-      };
-      if (editingPost) {
-        await axios.put(`${API_URL}/${editingPost.id}`, { post: postPayload });
-        setEditingPost(null);
-      } else {
-        await axios.post(API_URL, { post: postPayload });
-      }
-      setTitle("");
-      setBody("");
-      setCategoryId("");
-      fetchPosts();
-    } catch (err) {
-      setPostErrors(err.response?.data?.errors || ["Something went wrong."]);
-    }
-  };
-
-  const handleEdit = (post) => {
-    setTitle(post.title);
-    setBody(post.body);
-    setCategoryId(post.category_id || "");
-    setEditingPost(post);
-  };
-
-  const handleDelete = async (id) => {
-    await axios.delete(`${API_URL}/${id}`);
-    fetchPosts();
-  };
-
-  const handleCommentSubmit = async (e, postId) => {
-    e.preventDefault();
-    const commentBody = newComments[postId] || "";
-    setCommentErrors((prev) => ({ ...prev, [postId]: [] }));
-
-    try {
-      if (editingComments[postId]) {
-        await axios.put(
-          `${API_URL}/${postId}/comments/${editingComments[postId].id}`,
-          { comment: { body: commentBody } }
-        );
-        setEditingComments((prev) => ({ ...prev, [postId]: null }));
-      } else {
-        await axios.post(`${API_URL}/${postId}/comments`, {
-          comment: { body: commentBody },
-        });
-      }
-      setNewComments((prev) => ({ ...prev, [postId]: "" }));
-      fetchPosts();
-    } catch (err) {
-      setCommentErrors((prev) => ({
-        ...prev,
-        [postId]: err.response?.data?.errors || ["Something went wrong"],
-      }));
-    }
-  };
-
-  const handleEditComment = (postId, comment) => {
-    setNewComments((prev) => ({ ...prev, [postId]: comment.body }));
-    setEditingComments((prev) => ({ ...prev, [postId]: comment }));
-  };
-
-  const handleDeleteComment = async (postId, commentId) => {
-    await axios.delete(`${API_URL}/${postId}/comments/${commentId}`);
-    setEditingComments((prev) => ({ ...prev, [postId]: null }));
-    setNewComments((prev) => ({ ...prev, [postId]: "" }));
-    fetchPosts();
-  };
+  const [activeSection, setActiveSection] = useState("dashboard");
 
   // Toggle sidebar function
   const toggleSidebar = () => {
@@ -240,15 +116,15 @@ function Dashboard() {
               </button>
             </li>
 
-            {/* Posts Item */}
+            {/* CRUD with Comments Item */}
             <li>
               <button
-                onClick={() => setActiveSection("posts")}
+                onClick={() => setActiveSection("crud")}
                 className={`
                   flex items-center w-full p-3 mb-1
                   ${sidebarCollapsed ? "justify-center" : "justify-start pl-6"}
                   ${
-                    activeSection === "posts"
+                    activeSection === "crud"
                       ? darkMode
                         ? "bg-gray-700 text-white"
                         : "bg-blue-50 text-blue-700"
@@ -275,7 +151,7 @@ function Dashboard() {
                   <line x1="16" y1="17" x2="8" y2="17"></line>
                   <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
-                {!sidebarCollapsed && <span className="ml-3">Posts</span>}
+                {!sidebarCollapsed && <span className="ml-3">CRUD with Comments</span>}
               </button>
             </li>
 
@@ -498,7 +374,7 @@ function Dashboard() {
         >
           <div className="flex justify-between items-center">
             <h1 className="text-xl font-bold">
-              {activeSection === "posts"
+              {activeSection === "crud"
                 ? "CRUD with Comments"
                 : activeSection.charAt(0).toUpperCase() +
                   activeSection.slice(1)}
@@ -537,206 +413,76 @@ function Dashboard() {
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto p-6">
-          {activeSection === "posts" && (
-            <>
-              {/* Post Form */}
-              <form
-                onSubmit={handleSubmit}
-                className={`p-6 rounded shadow-md max-w-xl mx-auto mb-8 ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-              >
-                <h2 className="text-lg font-semibold mb-4">
-                  {editingPost ? "Edit Post" : "Create New Post"}
-                </h2>
-                <input
-                  type="text"
-                  placeholder="Title"
-                  className={`w-full p-2 mb-4 border rounded ${
-                    darkMode
-                      ? "bg-gray-700 border-gray-600 text-white"
-                      : "bg-white border-gray-300"
-                  }`}
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
-                />
-                <textarea
-                  placeholder="Body"
-                  className={`w-full p-2 mb-4 border rounded ${
-                    darkMode
-                      ? "bg-gray-700 border-gray-600 text-white"
-                      : "bg-white border-gray-300"
-                  }`}
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  required
-                />
-
-                {/* Category Dropdown */}
-                <select
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className={`w-full p-2 mb-4 border rounded ${
-                    darkMode
-                      ? "bg-gray-700 border-gray-600 text-white"
-                      : "bg-white border-gray-300"
-                  }`}
-                  required
-                >
-                  <option value="">Select Category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-
-                {postErrors.length > 0 && (
-                  <div
-                    className={`mb-4 text-sm transition-opacity duration-1000 ${
-                      isFading ? "opacity-0" : "opacity-100"
-                    } ${darkMode ? "text-red-400" : "text-red-600"}`}
-                  >
-                    <ul className="list-disc list-inside">
-                      {postErrors.map((err, idx) => (
-                        <li key={idx}>{err}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                <button
-                  type="submit"
-                  className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition"
-                >
-                  {editingPost ? "Update Post" : "Create Post"}
-                </button>
-              </form>
-
-              {/* Posts and Comments */}
-              <div className="max-w-xl mx-auto space-y-4">
-                <h2 className="text-lg font-semibold mb-4">All Posts</h2>
-                {posts.map((post) => (
-                  <div
-                    key={post.id}
-                    className={`p-4 rounded shadow-sm ${
-                      darkMode ? "bg-gray-800" : "bg-white"
-                    }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h2 className="text-xl font-semibold">{post.title}</h2>
-                        <p>{post.body}</p>
-                      </div>
-                      <div className="space-x-2">
-                        <button
-                          onClick={() => handleEdit(post)}
-                          className={`${
-                            darkMode ? "text-blue-400" : "text-blue-600"
-                          } hover:underline`}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(post.id)}
-                          className={`${
-                            darkMode ? "text-red-400" : "text-red-600"
-                          } hover:underline`}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Comments */}
-                    <div
-                      className={`mt-4 pl-4 border-l ${
-                        darkMode ? "border-gray-600" : "border-gray-300"
-                      }`}
-                    >
-                      <h3 className="text-md font-bold mb-2">Comments</h3>
-                      {commentsByPostId[post.id]?.map((comment) => (
-                        <div
-                          key={comment.id}
-                          className="mb-2 flex justify-between items-start"
-                        >
-                          <p className="text-sm">{comment.body}</p>
-                          <div className="space-x-1 text-sm">
-                            <button
-                              onClick={() =>
-                                handleEditComment(post.id, comment)
-                              }
-                              className={`${
-                                darkMode ? "text-blue-400" : "text-blue-500"
-                              } hover:underline`}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleDeleteComment(post.id, comment.id)
-                              }
-                              className={`${
-                                darkMode ? "text-red-400" : "text-red-500"
-                              } hover:underline`}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-
-                      <form
-                        onSubmit={(e) => handleCommentSubmit(e, post.id)}
-                        className="mt-2"
-                      >
-                        <input
-                          type="text"
-                          placeholder="Write a comment..."
-                          className={`w-full p-2 border rounded text-sm ${
-                            darkMode
-                              ? "bg-gray-700 border-gray-600 text-white"
-                              : "bg-white border-gray-300"
-                          }`}
-                          value={newComments[post.id] || ""}
-                          onChange={(e) =>
-                            setNewComments((prev) => ({
-                              ...prev,
-                              [post.id]: e.target.value,
-                            }))
-                          }
-                          required
-                        />
-                        {commentErrors[post.id]?.length > 0 && (
-                          <div
-                            className={`text-sm mt-1 ${
-                              darkMode ? "text-red-400" : "text-red-600"
-                            }`}
-                          >
-                            <ul className="list-disc list-inside">
-                              {commentErrors[post.id].map((err, idx) => (
-                                <li key={idx}>{err}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        <button
-                          type="submit"
-                          className="mt-1 bg-blue-500 text-white text-sm py-1 px-2 rounded hover:bg-blue-600"
-                        >
-                          {editingComments[post.id]
-                            ? "Update Comment"
-                            : "Add Comment"}
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                ))}
+          {activeSection === "crud" ? (
+            <CrudWithComments darkMode={darkMode} />
+          ) : activeSection === "dashboard" ? (
+            <div
+              className={`p-6 rounded shadow-md max-w-4xl mx-auto ${
+                darkMode ? "bg-gray-800" : "bg-white"
+              }`}
+            >
+              <h2 className="text-xl font-semibold mb-4">Dashboard Overview</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-700" : "bg-blue-50"}`}>
+                  <h3 className="font-medium mb-2">Total Posts</h3>
+                  <p className="text-2xl font-bold">24</p>
+                  <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>+12% from last week</p>
+                </div>
+                
+                <div className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-700" : "bg-green-50"}`}>
+                  <h3 className="font-medium mb-2">Total Comments</h3>
+                  <p className="text-2xl font-bold">142</p>
+                  <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>+8% from last week</p>
+                </div>
+                
+                <div className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-700" : "bg-purple-50"}`}>
+                  <h3 className="font-medium mb-2">Active Users</h3>
+                  <p className="text-2xl font-bold">18</p>
+                  <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>+5% from last week</p>
+                </div>
               </div>
-            </>
-          )}
-
-          {activeSection !== "posts" && (
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-700" : "bg-white"}`}>
+                  <h3 className="font-medium mb-3">Recent Posts</h3>
+                  <ul className="space-y-2">
+                    <li className="border-b pb-2 border-gray-200 dark:border-gray-600">How to implement dark mode</li>
+                    <li className="border-b pb-2 border-gray-200 dark:border-gray-600">React hooks explained</li>
+                    <li className="border-b pb-2 border-gray-200 dark:border-gray-600">Getting started with Tailwind CSS</li>
+                    <li className="border-b pb-2 border-gray-200 dark:border-gray-600">Building responsive layouts</li>
+                    <li>Best practices for React components</li>
+                  </ul>
+                </div>
+                
+                <div className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-700" : "bg-white"}`}>
+                  <h3 className="font-medium mb-3">Popular Categories</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span>React</span>
+                      <span className={`px-2 py-1 text-xs rounded ${darkMode ? "bg-blue-900 text-blue-200" : "bg-blue-100 text-blue-800"}`}>42 posts</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>JavaScript</span>
+                      <span className={`px-2 py-1 text-xs rounded ${darkMode ? "bg-yellow-900 text-yellow-200" : "bg-yellow-100 text-yellow-800"}`}>38 posts</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>CSS</span>
+                      <span className={`px-2 py-1 text-xs rounded ${darkMode ? "bg-purple-900 text-purple-200" : "bg-purple-100 text-purple-800"}`}>27 posts</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Tailwind</span>
+                      <span className={`px-2 py-1 text-xs rounded ${darkMode ? "bg-green-900 text-green-200" : "bg-green-100 text-green-800"}`}>19 posts</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Node.js</span>
+                      <span className={`px-2 py-1 text-xs rounded ${darkMode ? "bg-red-900 text-red-200" : "bg-red-100 text-red-800"}`}>15 posts</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
             <div
               className={`p-6 rounded shadow-md max-w-xl mx-auto ${
                 darkMode ? "bg-gray-800" : "bg-white"
