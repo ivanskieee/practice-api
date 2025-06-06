@@ -1,385 +1,195 @@
 import { useEffect, useState } from "react";
-import { useTheme } from "./ThemeContext";
-import CrudWithComments from "./CrudWithComments";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
+import { Menu, X, Home, BarChart3, Users, Settings, Plus, Bell, Search } from 'lucide-react';
+
+// Mock theme context for demo
+const useTheme = () => {
+  const [darkMode, setDarkMode] = useState(false);
+  return {
+    darkMode,
+    toggleDarkMode: () => setDarkMode(!darkMode)
+  };
+};
+
+// Mock CrudWithComments component
+const CrudWithComments = ({ darkMode }) => (
+  <div className={`p-6 rounded shadow-md ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+    <h2 className="text-xl font-semibold mb-4">CRUD Operations</h2>
+    <p>CRUD with Comments component would be here</p>
+  </div>
+);
 
 function Dashboard() {
   const { darkMode, toggleDarkMode } = useTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState("dashboard");
 
-  // Toggle sidebar function
+  // Sample data for charts
+  const weeklyData = [
+    { name: 'Mon', posts: 4, comments: 24, users: 12 },
+    { name: 'Tue', posts: 3, comments: 18, users: 15 },
+    { name: 'Wed', posts: 6, comments: 32, users: 20 },
+    { name: 'Thu', posts: 8, comments: 28, users: 18 },
+    { name: 'Fri', posts: 5, comments: 35, users: 22 },
+    { name: 'Sat', posts: 2, comments: 12, users: 8 },
+    { name: 'Sun', posts: 3, comments: 15, users: 10 }
+  ];
+
+  const categoryData = [
+    { name: 'React', value: 42, color: '#3B82F6' },
+    { name: 'JavaScript', value: 38, color: '#F59E0B' },
+    { name: 'CSS', value: 27, color: '#8B5CF6' },
+    { name: 'Tailwind', value: 19, color: '#10B981' },
+    { name: 'Node.js', value: 15, color: '#EF4444' }
+  ];
+
+  const monthlyGrowth = [
+    { month: 'Jan', posts: 85, comments: 420 },
+    { month: 'Feb', posts: 92, comments: 468 },
+    { month: 'Mar', posts: 108, comments: 542 },
+    { month: 'Apr', posts: 125, comments: 625 },
+    { month: 'May', posts: 142, comments: 710 },
+    { month: 'Jun', posts: 156, comments: 780 }
+  ];
+
+  const engagementData = [
+    { day: 'Mon', engagement: 65 },
+    { day: 'Tue', engagement: 72 },
+    { day: 'Wed', engagement: 85 },
+    { day: 'Thu', engagement: 78 },
+    { day: 'Fri', engagement: 90 },
+    { day: 'Sat', engagement: 45 },
+    { day: 'Sun', engagement: 38 }
+  ];
+
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
+  const chartColors = {
+    primary: darkMode ? '#60A5FA' : '#3B82F6',
+    secondary: darkMode ? '#34D399' : '#10B981',
+    accent: darkMode ? '#F472B6' : '#EC4899',
+    text: darkMode ? '#F3F4F6' : '#374151',
+    grid: darkMode ? '#374151' : '#E5E7EB'
+  };
+
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'crud', label: 'CRUD', icon: Plus },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'users', label: 'Users', icon: Users },
+    { id: 'settings', label: 'Settings', icon: Settings }
+  ];
+
   return (
-    <div
-      className={`flex min-h-screen ${
-        darkMode ? "bg-gray-900 text-gray-100" : "bg-gray-100 text-gray-900"
-      }`}
-    >
+    <div className={`min-h-screen flex ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* Sidebar */}
-      <div
-        className={`
-        ${sidebarCollapsed ? "w-16" : "w-64"} 
-        transition-all duration-300 ease-in-out
-        ${
-          darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-        } 
-        border-r shadow-lg flex flex-col`}
-      >
+      <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 ${
+        darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+      } border-r flex flex-col`}>
         {/* Sidebar Header */}
-        <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
-          {!sidebarCollapsed && (
-            <h2 className="font-bold text-lg">Admin Panel</h2>
-          )}
-          <button
-            onClick={toggleSidebar}
-            className={`${
-              darkMode
-                ? "text-gray-300 hover:text-white"
-                : "text-gray-600 hover:text-gray-900"
-            } transition-colors`}
-          >
-            {sidebarCollapsed ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-6 h-6"
-              >
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 8 16 12 12 16"></polyline>
-                <line x1="8" y1="12" x2="16" y2="12"></line>
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-6 h-6"
-              >
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 16 8 12 12 8"></polyline>
-                <line x1="16" y1="12" x2="8" y2="12"></line>
-              </svg>
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            {!sidebarCollapsed && (
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Admin Panel
+              </h1>
             )}
-          </button>
+            <button
+              onClick={toggleSidebar}
+              className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                sidebarCollapsed ? 'mx-auto' : ''
+              }`}
+            >
+              {sidebarCollapsed ? <Menu size={20} /> : <X size={20} />}
+            </button>
+          </div>
         </div>
 
-        {/* Sidebar Navigation */}
-        <nav className="flex-1 pt-4">
-          <ul>
-            {/* Dashboard Item */}
-            <li>
-              <button
-                onClick={() => setActiveSection("dashboard")}
-                className={`
-                  flex items-center w-full p-3 mb-1
-                  ${sidebarCollapsed ? "justify-center" : "justify-start pl-6"}
-                  ${
-                    activeSection === "dashboard"
-                      ? darkMode
-                        ? "bg-gray-700 text-white"
-                        : "bg-blue-50 text-blue-700"
-                      : darkMode
-                      ? "text-gray-300 hover:bg-gray-700"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }
-                  transition-colors rounded-l-lg
-                `}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5"
-                >
-                  <rect x="3" y="3" width="7" height="7"></rect>
-                  <rect x="14" y="3" width="7" height="7"></rect>
-                  <rect x="14" y="14" width="7" height="7"></rect>
-                  <rect x="3" y="14" width="7" height="7"></rect>
-                </svg>
-                {!sidebarCollapsed && <span className="ml-3">Dashboard</span>}
-              </button>
-            </li>
-
-            {/* CRUD with Comments Item */}
-            <li>
-              <button
-                onClick={() => setActiveSection("crud")}
-                className={`
-                  flex items-center w-full p-3 mb-1
-                  ${sidebarCollapsed ? "justify-center" : "justify-start pl-6"}
-                  ${
-                    activeSection === "crud"
-                      ? darkMode
-                        ? "bg-gray-700 text-white"
-                        : "bg-blue-50 text-blue-700"
-                      : darkMode
-                      ? "text-gray-300 hover:bg-gray-700"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }
-                  transition-colors rounded-l-lg
-                `}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5"
-                >
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                  <polyline points="10 9 9 9 8 9"></polyline>
-                </svg>
-                {!sidebarCollapsed && <span className="ml-3">CRUD with Comments</span>}
-              </button>
-            </li>
-
-            {/* Users Item */}
-            <li>
-              <button
-                onClick={() => setActiveSection("users")}
-                className={`
-                  flex items-center w-full p-3 mb-1
-                  ${sidebarCollapsed ? "justify-center" : "justify-start pl-6"}
-                  ${
-                    activeSection === "users"
-                      ? darkMode
-                        ? "bg-gray-700 text-white"
-                        : "bg-blue-50 text-blue-700"
-                      : darkMode
-                      ? "text-gray-300 hover:bg-gray-700"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }
-                  transition-colors rounded-l-lg
-                `}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5"
-                >
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-                {!sidebarCollapsed && <span className="ml-3">Users</span>}
-              </button>
-            </li>
-
-            {/* Analytics Item */}
-            <li>
-              <button
-                onClick={() => setActiveSection("analytics")}
-                className={`
-                  flex items-center w-full p-3 mb-1
-                  ${sidebarCollapsed ? "justify-center" : "justify-start pl-6"}
-                  ${
-                    activeSection === "analytics"
-                      ? darkMode
-                        ? "bg-gray-700 text-white"
-                        : "bg-blue-50 text-blue-700"
-                      : darkMode
-                      ? "text-gray-300 hover:bg-gray-700"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }
-                  transition-colors rounded-l-lg
-                `}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5"
-                >
-                  <line x1="18" y1="20" x2="18" y2="10"></line>
-                  <line x1="12" y1="20" x2="12" y2="4"></line>
-                  <line x1="6" y1="20" x2="6" y2="14"></line>
-                </svg>
-                {!sidebarCollapsed && <span className="ml-3">Analytics</span>}
-              </button>
-            </li>
-
-            {/* Settings Item */}
-            <li>
-              <button
-                onClick={() => setActiveSection("settings")}
-                className={`
-                  flex items-center w-full p-3 mb-1
-                  ${sidebarCollapsed ? "justify-center" : "justify-start pl-6"}
-                  ${
-                    activeSection === "settings"
-                      ? darkMode
-                        ? "bg-gray-700 text-white"
-                        : "bg-blue-50 text-blue-700"
-                      : darkMode
-                      ? "text-gray-300 hover:bg-gray-700"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }
-                  transition-colors rounded-l-lg
-                `}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5"
-                >
-                  <circle cx="12" cy="12" r="3"></circle>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                </svg>
-                {!sidebarCollapsed && <span className="ml-3">Settings</span>}
-              </button>
-            </li>
+        {/* Navigation */}
+        <nav className="flex-1 p-4">
+          <ul className="space-y-2">
+            {menuItems.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <li key={item.id}>
+                  <button
+                    onClick={() => setActiveSection(item.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                      activeSection === item.id
+                        ? darkMode
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-blue-500 text-white'
+                        : darkMode
+                        ? 'hover:bg-gray-700 text-gray-300'
+                        : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    <IconComponent size={20} />
+                    {!sidebarCollapsed && <span>{item.label}</span>}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
         {/* Sidebar Footer */}
-        <div
-          className={`p-4 mt-auto border-t ${
-            darkMode ? "border-gray-700" : "border-gray-200"
-          }`}
-        >
-          <button
-            onClick={toggleDarkMode}
-            className={`
-              flex items-center gap-2 px-4 py-2 rounded transition-colors duration-300 w-full
-              ${
-                darkMode
-                  ? "bg-gray-700 hover:bg-gray-600 text-white"
-                  : "bg-gray-200 hover:bg-gray-300 text-gray-800"
-              }
-            `}
-          >
-            {sidebarCollapsed ? (
-              darkMode ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5"
-                >
-                  <circle cx="12" cy="12" r="5"></circle>
-                  <line x1="12" y1="1" x2="12" y2="3"></line>
-                  <line x1="12" y1="21" x2="12" y2="23"></line>
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                  <line x1="1" y1="12" x2="3" y2="12"></line>
-                  <line x1="21" y1="12" x2="23" y2="12"></line>
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                </svg>
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5"
-                >
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                </svg>
-              )
-            ) : darkMode ? (
-              <>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5"
-                >
-                  <circle cx="12" cy="12" r="5"></circle>
-                  <line x1="12" y1="1" x2="12" y2="3"></line>
-                  <line x1="12" y1="21" x2="12" y2="23"></line>
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                  <line x1="1" y1="12" x2="3" y2="12"></line>
-                  <line x1="21" y1="12" x2="23" y2="12"></line>
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                </svg>
-                <span>Light Mode</span>
-              </>
-            ) : (
-              <>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5"
-                >
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                </svg>
-                <span>Dark Mode</span>
-              </>
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className={`flex items-center gap-3 ${sidebarCollapsed ? 'justify-center' : ''}`}>
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium">
+              U
+            </div>
+            {!sidebarCollapsed && (
+              <div>
+                <p className="font-medium">John Doe</p>
+                <p className="text-sm text-gray-500">Administrator</p>
+              </div>
             )}
-          </button>
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col">
         {/* Header */}
-        <header
-          className={`p-4 shadow-md ${darkMode ? "bg-gray-800" : "bg-white"}`}
-        >
-          <div className="flex justify-between items-center">
-            <h1 className="text-xl font-bold">
-              {activeSection === "crud"
-                ? "CRUD with Comments"
-                : activeSection.charAt(0).toUpperCase() +
-                  activeSection.slice(1)}
-            </h1>
-            <div className="flex items-center gap-3">
+        <header className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-6 py-4`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h2 className="text-2xl font-semibold">
+                {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}
+              </h2>
+              <div className="hidden md:flex items-center gap-2">
+                <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${
+                  darkMode ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <Search size={16} />
+                  <input
+                    placeholder="Search..."
+                    className="bg-transparent outline-none text-sm w-40"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <button className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 relative`}>
+                <Bell size={20} />
+                <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+              
+              <button
+                onClick={toggleDarkMode}
+                className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                  darkMode 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                }`}
+              >
+                {darkMode ? '☀️' : '🌙'}
+              </button>
+              <div className="flex items-center gap-3">
               <span className={darkMode ? "text-gray-300" : "text-gray-600"}>
                 Welcome, Admin
               </span>
@@ -408,93 +218,292 @@ function Dashboard() {
                 </svg>
               </button>
             </div>
+            </div>
           </div>
         </header>
 
-        {/* Content */}
+        {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto p-6">
           {activeSection === "crud" ? (
             <CrudWithComments darkMode={darkMode} />
           ) : activeSection === "dashboard" ? (
-            <div
-              className={`p-6 rounded shadow-md max-w-4xl mx-auto ${
-                darkMode ? "bg-gray-800" : "bg-white"
-              }`}
-            >
-              <h2 className="text-xl font-semibold mb-4">Dashboard Overview</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-700" : "bg-blue-50"}`}>
-                  <h3 className="font-medium mb-2">Total Posts</h3>
-                  <p className="text-2xl font-bold">24</p>
-                  <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>+12% from last week</p>
-                </div>
-                
-                <div className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-700" : "bg-green-50"}`}>
-                  <h3 className="font-medium mb-2">Total Comments</h3>
-                  <p className="text-2xl font-bold">142</p>
-                  <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>+8% from last week</p>
-                </div>
-                
-                <div className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-700" : "bg-purple-50"}`}>
-                  <h3 className="font-medium mb-2">Active Users</h3>
-                  <p className="text-2xl font-bold">18</p>
-                  <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>+5% from last week</p>
+            <div className={`p-6 rounded-lg shadow-lg max-w-7xl mx-auto ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Dashboard Analytics
+                </h3>
+                <div className="text-sm text-gray-500">
+                  Last updated: {new Date().toLocaleDateString()}
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-700" : "bg-white"}`}>
-                  <h3 className="font-medium mb-3">Recent Posts</h3>
-                  <ul className="space-y-2">
-                    <li className="border-b pb-2 border-gray-200 dark:border-gray-600">How to implement dark mode</li>
-                    <li className="border-b pb-2 border-gray-200 dark:border-gray-600">React hooks explained</li>
-                    <li className="border-b pb-2 border-gray-200 dark:border-gray-600">Getting started with Tailwind CSS</li>
-                    <li className="border-b pb-2 border-gray-200 dark:border-gray-600">Building responsive layouts</li>
-                    <li>Best practices for React components</li>
+              {/* KPI Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className={`p-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 ${
+                  darkMode ? "bg-gradient-to-br from-blue-900 to-blue-800" : "bg-gradient-to-br from-blue-50 to-blue-100"
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium mb-2 text-sm opacity-80">Total Posts</h4>
+                      <p className="text-3xl font-bold">24</p>
+                      <p className="text-sm text-green-500 font-medium">+12% from last week</p>
+                    </div>
+                    <div className="text-4xl opacity-20">📝</div>
+                  </div>
+                </div>
+                
+                <div className={`p-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 ${
+                  darkMode ? "bg-gradient-to-br from-green-900 to-green-800" : "bg-gradient-to-br from-green-50 to-green-100"
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium mb-2 text-sm opacity-80">Total Comments</h4>
+                      <p className="text-3xl font-bold">142</p>
+                      <p className="text-sm text-green-500 font-medium">+8% from last week</p>
+                    </div>
+                    <div className="text-4xl opacity-20">💬</div>
+                  </div>
+                </div>
+                
+                <div className={`p-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 ${
+                  darkMode ? "bg-gradient-to-br from-purple-900 to-purple-800" : "bg-gradient-to-br from-purple-50 to-purple-100"
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium mb-2 text-sm opacity-80">Active Users</h4>
+                      <p className="text-3xl font-bold">18</p>
+                      <p className="text-sm text-green-500 font-medium">+5% from last week</p>
+                    </div>
+                    <div className="text-4xl opacity-20">👥</div>
+                  </div>
+                </div>
+
+                <div className={`p-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 ${
+                  darkMode ? "bg-gradient-to-br from-orange-900 to-orange-800" : "bg-gradient-to-br from-orange-50 to-orange-100"
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium mb-2 text-sm opacity-80">Engagement Rate</h4>
+                      <p className="text-3xl font-bold">87%</p>
+                      <p className="text-sm text-green-500 font-medium">+3% from last week</p>
+                    </div>
+                    <div className="text-4xl opacity-20">📊</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Charts Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                {/* Weekly Activity Chart */}
+                <div className={`p-6 rounded-xl shadow-lg ${darkMode ? "bg-gray-700" : "bg-white"}`}>
+                  <h4 className="text-lg font-semibold mb-4 flex items-center">
+                    📈 Weekly Activity
+                  </h4>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={weeklyData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                      <XAxis dataKey="name" stroke={chartColors.text} />
+                      <YAxis stroke={chartColors.text} />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: darkMode ? '#374151' : '#ffffff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
+                      <Legend />
+                      <Line 
+                        type="monotone" 
+                        dataKey="posts" 
+                        stroke={chartColors.primary} 
+                        strokeWidth={3}
+                        dot={{ fill: chartColors.primary, strokeWidth: 2, r: 6 }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="comments" 
+                        stroke={chartColors.secondary} 
+                        strokeWidth={3}
+                        dot={{ fill: chartColors.secondary, strokeWidth: 2, r: 6 }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="users" 
+                        stroke={chartColors.accent} 
+                        strokeWidth={3}
+                        dot={{ fill: chartColors.accent, strokeWidth: 2, r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Category Distribution */}
+                <div className={`p-6 rounded-xl shadow-lg ${darkMode ? "bg-gray-700" : "bg-white"}`}>
+                  <h4 className="text-lg font-semibold mb-4 flex items-center">
+                    🎯 Category Distribution
+                  </h4>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: darkMode ? '#374151' : '#ffffff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Monthly Growth & Engagement */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                {/* Monthly Growth */}
+                <div className={`p-6 rounded-xl shadow-lg ${darkMode ? "bg-gray-700" : "bg-white"}`}>
+                  <h4 className="text-lg font-semibold mb-4 flex items-center">
+                    📅 Monthly Growth Trend
+                  </h4>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart data={monthlyGrowth}>
+                      <defs>
+                        <linearGradient id="colorPosts" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={chartColors.primary} stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor={chartColors.primary} stopOpacity={0.1}/>
+                        </linearGradient>
+                        <linearGradient id="colorComments" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={chartColors.secondary} stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor={chartColors.secondary} stopOpacity={0.1}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                      <XAxis dataKey="month" stroke={chartColors.text} />
+                      <YAxis stroke={chartColors.text} />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: darkMode ? '#374151' : '#ffffff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="posts" 
+                        stroke={chartColors.primary} 
+                        fillOpacity={1} 
+                        fill="url(#colorPosts)" 
+                        strokeWidth={2}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="comments" 
+                        stroke={chartColors.secondary} 
+                        fillOpacity={1} 
+                        fill="url(#colorComments)" 
+                        strokeWidth={2}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Engagement Rate */}
+                <div className={`p-6 rounded-xl shadow-lg ${darkMode ? "bg-gray-700" : "bg-white"}`}>
+                  <h4 className="text-lg font-semibold mb-4 flex items-center">
+                    🔥 Daily Engagement Rate
+                  </h4>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={engagementData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                      <XAxis dataKey="day" stroke={chartColors.text} />
+                      <YAxis stroke={chartColors.text} />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: darkMode ? '#374151' : '#ffffff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
+                      <Bar 
+                        dataKey="engagement" 
+                        fill={chartColors.primary}
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Bottom Section - Recent Activity & Popular Categories */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className={`p-6 rounded-xl shadow-lg ${darkMode ? "bg-gray-700" : "bg-white"}`}>
+                  <h4 className="text-lg font-semibold mb-4 flex items-center">
+                    🕒 Recent Posts
+                  </h4>
+                  <ul className="space-y-3">
+                    {[
+                      "How to implement dark mode",
+                      "React hooks explained", 
+                      "Getting started with Tailwind CSS",
+                      "Building responsive layouts",
+                      "Best practices for React components"
+                    ].map((post, index) => (
+                      <li key={index} className={`p-3 rounded-lg border-l-4 border-blue-500 ${
+                        darkMode ? "bg-gray-800" : "bg-gray-50"
+                      } hover:shadow-md transition-all duration-200`}>
+                        {post}
+                      </li>
+                    ))}
                   </ul>
                 </div>
                 
-                <div className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-700" : "bg-white"}`}>
-                  <h3 className="font-medium mb-3">Popular Categories</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span>React</span>
-                      <span className={`px-2 py-1 text-xs rounded ${darkMode ? "bg-blue-900 text-blue-200" : "bg-blue-100 text-blue-800"}`}>42 posts</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>JavaScript</span>
-                      <span className={`px-2 py-1 text-xs rounded ${darkMode ? "bg-yellow-900 text-yellow-200" : "bg-yellow-100 text-yellow-800"}`}>38 posts</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>CSS</span>
-                      <span className={`px-2 py-1 text-xs rounded ${darkMode ? "bg-purple-900 text-purple-200" : "bg-purple-100 text-purple-800"}`}>27 posts</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Tailwind</span>
-                      <span className={`px-2 py-1 text-xs rounded ${darkMode ? "bg-green-900 text-green-200" : "bg-green-100 text-green-800"}`}>19 posts</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Node.js</span>
-                      <span className={`px-2 py-1 text-xs rounded ${darkMode ? "bg-red-900 text-red-200" : "bg-red-100 text-red-800"}`}>15 posts</span>
-                    </div>
+                <div className={`p-6 rounded-xl shadow-lg ${darkMode ? "bg-gray-700" : "bg-white"}`}>
+                  <h4 className="text-lg font-semibold mb-4 flex items-center">
+                    🏷️ Popular Categories
+                  </h4>
+                  <div className="space-y-3">
+                    {categoryData.map((category, index) => (
+                      <div key={index} className="flex justify-between items-center p-3 rounded-lg hover:shadow-md transition-all duration-200">
+                        <div className="flex items-center space-x-3">
+                          <div 
+                            className="w-4 h-4 rounded-full" 
+                            style={{ backgroundColor: category.color }}
+                          ></div>
+                          <span className="font-medium">{category.name}</span>
+                        </div>
+                        <span className={`px-3 py-1 text-sm rounded-full font-medium ${
+                          darkMode ? "bg-gray-800 text-gray-200" : "bg-gray-100 text-gray-800"
+                        }`}>
+                          {category.value} posts
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            <div
-              className={`p-6 rounded shadow-md max-w-xl mx-auto ${
-                darkMode ? "bg-gray-800" : "bg-white"
-              }`}
-            >
-              <h2 className="text-xl font-semibold mb-4">
-                {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}{" "}
-                Section
-              </h2>
+            <div className={`p-6 rounded shadow-md max-w-xl mx-auto ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <h3 className="text-xl font-semibold mb-4">
+                {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)} Section
+              </h3>
               <p className={`${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                This is a placeholder for the {activeSection.toLowerCase()}{" "}
-                section. Content for this section has not been implemented yet.
+                This is a placeholder for the {activeSection.toLowerCase()} section. Content for this section has not been implemented yet.
               </p>
             </div>
           )}
