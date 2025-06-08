@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { Menu, X, Home, BarChart3, Users, Settings, Plus, Bell, Search } from 'lucide-react';
 
-// Mock theme context for demo
 const useTheme = () => {
   const [darkMode, setDarkMode] = useState(false);
   return {
@@ -10,8 +9,6 @@ const useTheme = () => {
     toggleDarkMode: () => setDarkMode(!darkMode)
   };
 };
-
-// Mock CrudWithComments component
 const CrudWithComments = ({ darkMode }) => (
   <div className={`p-6 rounded shadow-md ${darkMode ? "bg-gray-800" : "bg-white"}`}>
     <h2 className="text-xl font-semibold mb-4">CRUD Operations</h2>
@@ -24,7 +21,6 @@ function Dashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState("dashboard");
 
-  // Sample data for charts
   const weeklyData = [
     { name: 'Mon', posts: 4, comments: 24, users: 12 },
     { name: 'Tue', posts: 3, comments: 18, users: 15 },
